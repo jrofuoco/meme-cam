@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {eyesClosedScore} from './eye-gesture.js';
+test('closed eyes score higher than open eyes',()=>{const f=Array.from({length:478},()=>({x:.5,y:.5}));f[33]={x:.3,y:.4};f[133]={x:.4,y:.4};f[159]={x:.35,y:.4};f[145]={x:.35,y:.41};f[362]={x:.6,y:.4};f[263]={x:.7,y:.4};f[386]={x:.65,y:.4};f[374]={x:.65,y:.41};assert.ok(eyesClosedScore(f)>70);f[145].y=.45;f[374].y=.45;assert.ok(eyesClosedScore(f)<50);});

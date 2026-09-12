@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {handScore} from './hands.js';
+function hand(x){const h=Array.from({length:21},()=>({x,y:.5}));h[0]={x,y:.7};for(const [base,dx] of [[5,-.035],[9,0],[13,.03],[17,.055]]){h[base]={x:x+dx,y:.57};h[base+1]={x:x+dx,y:.53};h[base+2]={x:x+dx,y:.5};h[base+3]={x:x+dx,y:.47};}h[4]={x:x-.1,y:.6};return h;}
+test('two raised hands and mirrored order match',()=>{const h=[hand(.3),hand(.65)];assert.ok(handScore(h)>85);assert.equal(handScore(h),handScore(h.reverse()));});
+test('missing hand, fists, and overlapping hands reject',()=>{assert.equal(handScore([]),0);assert.equal(handScore([hand(.3)]),0);assert.equal(handScore([hand(.3),hand(.3)]),0);const h=hand(.3);[8,12,16,20].forEach(i=>h[i]={x:.3,y:.65});assert.equal(handScore([h,hand(.65)]),0);});

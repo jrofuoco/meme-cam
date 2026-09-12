@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {flatHandsScore} from './flat-hands.js';
+test('two vertically stacked hands score',()=>{const h=[Array.from({length:21},(_,i)=>({x:.45+i*.001,y:.35})),Array.from({length:21},(_,i)=>({x:.45+i*.001,y:.65}))];h.forEach(x=>{x[0]={x:.5,y:x[0].y};x[9]={x:.5,y:x[0].y+.08};});assert.ok(flatHandsScore(h)>0);});
+test('one horizontal open hand triggers flat-hands',()=>{const h=Array.from({length:21},()=>({x:.5,y:.4}));h[0]={x:.25,y:.45};for(const [base,tip] of [[5,8],[9,12],[13,16],[17,20]]){h[base]={x:.45,y:.42};h[tip]={x:.7,y:.4};}assert.ok(flatHandsScore([h])>=75);});
+test('one vertical hand does not trigger flat-hands',()=>{const h=Array.from({length:21},()=>({x:.5,y:.4}));h[0]={x:.5,y:.7};h[9]={x:.5,y:.45};assert.equal(flatHandsScore([h]),0);});

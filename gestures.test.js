@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {capTouchScore} from './gestures.js';
+test('forehead touch gesture works without a cap',()=>{const face=Array.from({length:478},()=>({x:.5,y:.5}));face[1]={x:.5,y:.55};face[10]={x:.5,y:.3};face[234]={x:.35,y:.5};face[454]={x:.65,y:.5};const h=Array.from({length:21},()=>({x:.7,y:.7}));h[0]={x:.7,y:.48};for(const i of [4,8,12,16,20])h[i]={x:.52,y:.31};assert.ok(capTouchScore([h],face)>70);});

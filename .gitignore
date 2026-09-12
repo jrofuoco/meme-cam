@@ -1,0 +1,7 @@
+node_modules/
+.pnpm-store/
+.tools/
+.vercel/
+*.log
+.DS_Store
+Thumbs.db

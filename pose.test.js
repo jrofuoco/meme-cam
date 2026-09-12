@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {poseScore} from './pose.js';
+test('missing or occluded landmarks do not trigger',()=>{assert.equal(poseScore(),0);assert.equal(poseScore([]),0);});
+test('hands near waist match; raised hands do not',()=>{const p=Array.from({length:33},()=>({x:.5,y:.5,visibility:1}));for(const [i,x,y] of [[11,.35,.25],[12,.65,.25],[13,.3,.5],[14,.7,.5],[15,.45,.65],[16,.55,.65],[23,.4,.65],[24,.6,.65]])p[i]={x,y,visibility:1};assert.ok(poseScore(p)>85);p[15].y=.1;p[16].y=.1;assert.ok(poseScore(p)<72);p[15].visibility=.1;assert.equal(poseScore(p),0);});

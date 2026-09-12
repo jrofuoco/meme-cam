@@ -1,0 +1,1 @@
+{"name":"meme-cam","private":true,"type":"module","main":"electron-main.mjs","scripts":{"start":"node server.mjs","desktop":"electron .","test":"node --test"},"devDependencies":{"electron":"^38.0.0"}}

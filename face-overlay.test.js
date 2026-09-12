@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {faceTransform} from './face-overlay.js';
+test('face overlay follows cover crop and mirrors its position',()=>{const p=Array.from({length:478},()=>({x:.4,y:.5}));p[10].y=.3;p[152].y=.7;p[33]={x:.3,y:.45};p[263]={x:.5,y:.5};p[234].x=.25;p[454].x=.55;const a=faceTransform(p,640,480),b=faceTransform(p,640,480,true);assert.equal(a.x,512);assert.equal(a.y,360);assert.equal(b.x,1280-a.x);assert.equal(b.angle,-a.angle);assert.ok(a.w>0);assert.equal(faceTransform(null,640,480),null);});
