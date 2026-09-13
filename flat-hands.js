@@ -1,22 +1,21 @@
-// One palm held horizontally above a second open palm.
-export function flatHandsScore(hands){
- if(!hands||hands.length===0)return 0;
+// Detect an open hand pointing sideways, independently of the other hand.
+export function flatHandsScore(hands,aspect=1){
+ if(!Array.isArray(hands)||!Number.isFinite(aspect)||aspect<=0)return 0;
  const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
- const palm=h=>d(h[0],h[9]);
- if(hands.length===1){
-  const h=hands[0],size=palm(h);
-  if(size<.025)return 0;
-  const horizontal=Math.abs(h[9].x-h[0].x)/(Math.abs(h[9].x-h[0].x)+Math.abs(h[9].y-h[0].y)+.001);
-  const extended=[8,12,16,20].filter(t=>d(h[t],h[0])>d(h[t-3],h[0])*.98).length;
-  if(horizontal<.62||extended<3)return 0;
-  return Math.round(75+25*Math.min(1,(horizontal-.62)/.3));
- }
- if(hands.length!==2)return 0;
- if(hands.some(h=>palm(h)<.02))return 0;
- const centers=hands.map(h=>({x:(h[0].x+h[9].x)/2,y:(h[0].y+h[9].y)/2}));
- const vertical=Math.abs(centers[0].y-centers[1].y),horizontal=Math.abs(centers[0].x-centers[1].x);
- const size=(palm(hands[0])+palm(hands[1]))/2;
- if(vertical<size*.35||vertical>size*4||horizontal>size*3)return 0;
- const flat=hands.map(h=>Math.abs(h[0].y-h[9].y)/palm(h));
- return Math.round(100*Math.min(1,vertical/(size*1.2))*Math.min(1,1/(1+flat[0]+flat[1])));
+ return hands.reduce((best,points)=>{
+  if(!Array.isArray(points)||points.length<21||points.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)))return best;
+  const h=points.map(p=>({x:p.x*aspect,y:p.y})),size=d(h[0],h[9]);
+  if(size<.025)return best;
+  const x=(h[9].x-h[0].x)/size,y=(h[9].y-h[0].y)/size;
+  const horizontal=Math.abs(x),limit=Math.cos(35*Math.PI/180);
+  if(horizontal<limit)return best;
+  const extended=[5,9,13,17].filter(b=>{
+   const root=h[b],tip=h[b+3];
+   const reach=(tip.x-root.x)*x+(tip.y-root.y)*y;
+   const length=d(root,h[b+1])+d(h[b+1],h[b+2])+d(h[b+2],tip);
+   return reach>size*.35&&d(h[0],tip)>d(h[0],root)+size*.3&&length>0&&d(root,tip)/length>.8;
+  }).length;
+  if(extended<3)return best;
+  return Math.max(best,Math.round(75+15*(horizontal-limit)/(1-limit)+10*(extended-3)));
+ },0);
 }

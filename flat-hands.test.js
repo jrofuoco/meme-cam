@@ -1,4 +1,34 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {flatHandsScore} from './flat-hands.js';
-test('two vertically stacked hands score',()=>{const h=[Array.from({length:21},(_,i)=>({x:.45+i*.001,y:.35})),Array.from({length:21},(_,i)=>({x:.45+i*.001,y:.65}))];h.forEach(x=>{x[0]={x:.5,y:x[0].y};x[9]={x:.5,y:x[0].y+.08};});assert.ok(flatHandsScore(h)>0);});
-test('one horizontal open hand triggers flat-hands',()=>{const h=Array.from({length:21},()=>({x:.5,y:.4}));h[0]={x:.25,y:.45};for(const [base,tip] of [[5,8],[9,12],[13,16],[17,20]]){h[base]={x:.45,y:.42};h[tip]={x:.7,y:.4};}assert.ok(flatHandsScore([h])>=75);});
-test('one vertical hand does not trigger flat-hands',()=>{const h=Array.from({length:21},()=>({x:.5,y:.4}));h[0]={x:.5,y:.7};h[9]={x:.5,y:.45};assert.equal(flatHandsScore([h]),0);});
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {flatHandsScore} from './flat-hands.js';
+function hand(angle=0,aspect=1,curled=0){
+ const h=Array.from({length:21},()=>({x:0,y:0}));
+ for(const [i,b] of [5,9,13,17].entries()){
+  for(let j=0;j<4;j++)h[b+j]={x:.1+j*.035,y:(i-1)*.025};
+  if(i<curled){h[b+2].x=.115;h[b+3].x=.085;}
+ }
+ const a=angle*Math.PI/180;
+ return h.map(p=>({x:.5+(p.x*Math.cos(a)-p.y*Math.sin(a))/aspect,y:.5+p.x*Math.sin(a)+p.y*Math.cos(a)}));
+}
+test('flat hands work in either direction and with moderate tilt',()=>{
+ for(const angle of [0,180,-30,30])assert.ok(flatHandsScore([hand(angle)])>=75);
+});
+test('camera proportions preserve tilt scoring',()=>{
+ for(const aspect of [1,16/9,9/16])assert.ok(flatHandsScore([hand(30,aspect)],aspect)>=75);
+});
+test('upright and steep diagonal hands reject',()=>{
+ for(const angle of [45,90,-90])assert.equal(flatHandsScore([hand(angle)]),0);
+});
+test('three fingers suffice but fists and two fingers reject',()=>{
+ assert.ok(flatHandsScore([hand(0,1,1)])>=75);
+ for(const curled of [2,4])assert.equal(flatHandsScore([hand(0,1,curled)]),0);
+});
+test('second hand does not disable a flat hand',()=>{
+ const flat=hand(),other=hand(90);
+ assert.equal(flatHandsScore([flat,other]),flatHandsScore([flat]));
+ assert.equal(flatHandsScore([other,flat]),flatHandsScore([flat]));
+ assert.equal(flatHandsScore([other,other]),0);
+});
+test('invalid landmarks safely reject',()=>{
+ for(const input of [undefined,[],[null],[[]],[Array(21).fill({x:NaN,y:0})]])assert.equal(flatHandsScore(input),0);
+});
