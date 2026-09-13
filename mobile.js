@@ -7,6 +7,7 @@ const audioBuffers=new Map(),audioLoads=new Map();
 const setState=s=>$('state').textContent=s;
 const fullscreenButton=document.querySelector("#fullscreen");
 function prepareSound(){
+ try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch{}
  audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
  const resumed=audioContext.resume();
  audioMessage='';
@@ -20,6 +21,17 @@ function prepareSound(){
  })]).then(()=>{if(audioContext.state!=='running')throw Error('Tap Start to enable sound.');});
 }
 function stopSound(){if(audioSource){audioSource.stop();audioSource=null;}}
+async function testSound(){
+ const button=$('test-sound');button.disabled=true;
+ try{
+  await prepareSound();stopSound();
+  audioSource=audioContext.createBufferSource();audioSource.buffer=audioBuffers.get('flat');
+  audioSource.connect(audioContext.destination);audioSource.start(0,0,5);
+  audioMessage='Sound test playing. If silent, turn up media volume and turn off Silent Mode.';
+ }catch(e){audioMessage=e.message;}
+ $('match').textContent=audioMessage;button.disabled=false;
+}
+document.addEventListener('DOMContentLoaded',()=>{$('test-sound').onclick=testSound;});
 async function models(){const V=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs'),files=await V.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');handModel||=await V.HandLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'},runningMode:'VIDEO',numHands:2});faceModel||=await V.FaceLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},runningMode:'VIDEO',numFaces:1});objectModel||=await V.ObjectDetector.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite'},runningMode:'VIDEO',scoreThreshold:.35,maxResults:5});}
 async function camera(){stopSound();held=0;heldKey=null;shown=0;cooldown=0;active=null;faceBox=null;last=-1;stream?.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}},audio:false});video.srcObject=stream;await video.play();running=true;$('empty').hidden=true;$('flip').disabled=$('capture').disabled=false;setState('LIVE');}
 function trigger(match,now){
